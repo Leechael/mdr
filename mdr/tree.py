@@ -3,7 +3,7 @@ import numpy as np
 import copy
 
 from .utils import find_continous_subsequence, reverse_dict
-from ._tree import _clustered_tree_match, _simple_tree_match, tree_size
+from .libtreefuncs import _clustered_tree_match, _simple_tree_match, tree_size
 
 def normalized_simple_tree_match(t1, t2):
     t1size = tree_size(t1)

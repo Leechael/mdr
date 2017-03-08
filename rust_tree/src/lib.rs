@@ -49,12 +49,6 @@ pub fn py_tree_size(token: Python, input: &PyObject) -> PyResult<usize> {
     }
 }
 
-py_module_initializer!(libtreefuncs, initlibtreefuncs, PyInit_libtreefuncs, |py, m| {
-    m.add(py, "__doc__", "Experimental Rust replacement for Cython code in mdr.")?;
-    m.add(py, "tree_size", py_fn!(py, py_tree_size(input: &PyObject)))?;
-    Ok(())
-});
-
 fn ts_have_same_tags(py: Python, t1: &PyObject, t2: &PyObject) -> bool {
     if !(t1.hasattr(py, "tag").expect("Hasattr failed?") && t2.hasattr(py, "tag").expect("Hasattr failed?")) {
         return false // TODO This mimics the original Cython behaviour but perhaps a TypeError is more appropriate!
@@ -106,6 +100,26 @@ pub fn simple_tree_match_rs(py: Python, t1: &PyObject, t2: &PyObject) -> PyResul
 }
 
 // Defaults for c1, c2 = 1.
+/* Replaces:
+def _clustered_tree_match(t1, t2, c1, c2):
+    if t1 is None or t2 is None:
+        return 0.0
+    if t1.tag != t2.tag:
+        return 0.0
+    m = len(t1)
+    n = len(t2)
+    matrix = np.zeros((m+1, n+1), np.float)
+    for i from 1 <= i < matrix.shape[0]:
+        for j from 1 <= j < matrix.shape[1]:
+            matrix[i, j] = max(matrix[i, j - 1], matrix[i - 1, j],
+                matrix[i - 1, j - 1] + _clustered_tree_match(t1[i - 1], t2[j - 1], m, n))
+
+    # XXX: m and n?
+    if m or n:
+        return matrix[m, n] / (1.0 * max(c1, c2))
+    else:
+        return matrix[m, n] + (1.0 / max(c1, c2))
+*/
 pub fn clustered_tree_match_rs(py: Python, t1: &PyObject, t2: &PyObject, c1: f64, c2: f64) -> PyResult<f64> {
     let none = py.None();
     if t1 == &none || t2 == &none { return Ok(0.0) }  // Does this work?
@@ -115,6 +129,7 @@ pub fn clustered_tree_match_rs(py: Python, t1: &PyObject, t2: &PyObject, c1: f64
     let m = t1.len(py).expect("Len failed on argument t1");
     let n = t2.len(py).expect("Len failed on argument t2");
     let mut matrix = ndarray::Array2::<f64>::zeros((m+1, n+1));
+    // TODO verify that ".." ranges are [1,n)
     for i in 1..matrix.shape()[0] {
         for j in 1..matrix.shape()[1] {
             let opt1 = matrix[[i, j-1]];
@@ -138,23 +153,10 @@ pub fn clustered_tree_match_rs(py: Python, t1: &PyObject, t2: &PyObject, c1: f64
     }
 }
 
-/*
-def _clustered_tree_match(t1, t2, c1, c2):
-    if t1 is None or t2 is None:
-        return 0.0
-    if t1.tag != t2.tag:
-        return 0.0
-    m = len(t1)
-    n = len(t2)
-    matrix = np.zeros((m+1, n+1), np.float)
-    for i from 1 <= i < matrix.shape[0]:
-        for j from 1 <= j < matrix.shape[1]:
-            matrix[i, j] = max(matrix[i, j - 1], matrix[i - 1, j],
-                matrix[i - 1, j - 1] + _clustered_tree_match(t1[i - 1], t2[j - 1], m, n))
-
-    # XXX: m and n?
-    if m or n:
-        return matrix[m, n] / (1.0 * max(c1, c2))
-    else:
-        return matrix[m, n] + (1.0 / max(c1, c2))
-*/
+py_module_initializer!(libtreefuncs, initlibtreefuncs, PyInit_libtreefuncs, |py, m| {
+    m.add(py, "__doc__", "Experimental Rust replacement for Cython code in mdr.")?;
+    m.add(py, "tree_size", py_fn!(py, py_tree_size(input: &PyObject)))?;
+    m.add(py, "_simple_tree_match", py_fn!(py, simple_tree_match_rs(t1: &PyObject, t2: &PyObject)))?;
+    m.add(py, "_clustered_tree_match", py_fn!(py, clustered_tree_match_rs(t1: &PyObject, t2: &PyObject, c1: f64, f2: f64)))?;
+    Ok(())
+});
