@@ -1,10 +1,11 @@
 [package]
-name = "tree"
+name = "treefuncs"
 version = "0.1.0"
 authors = ["Cathal Garvey <cathalgarvey@cathalgarvey.me>"]
 
-[dependencies]
+[lib]
+crate-type = ["cdylib"]
 
 [dependencies.cpython]
-version = "0.1.0"
+version = "0.1"
 features = ["extension-module"]
