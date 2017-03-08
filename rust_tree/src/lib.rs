@@ -55,7 +55,7 @@ fn ts_have_same_tags(py: Python, t1: &PyObject, t2: &PyObject) -> bool {
     }
     let t1tag = t1.getattr(py, "tag").expect("Getattr failed for 'tag' field after validating that it exists");
     let t2tag = t2.getattr(py, "tag").expect("Getattr failed for 'tag' field after validating that it exists");
-    t1tag == t2tag
+    t1tag.compare(py, t2tag).expect("Comparing strings should be possible.") == std::cmp::Ordering::Equal
 }
 
 /* Original Cython
@@ -74,8 +74,9 @@ def _simple_tree_match(t1, t2):
 // TODO Untested as yet
 pub fn simple_tree_match_rs(py: Python, t1: &PyObject, t2: &PyObject) -> PyResult<u32> {
     let none = py.None();
-    if t1 == &none || t2 == &none { return Ok(0) }  // Does this work?
+    if t1 == &none || t2 == &none { println!("One of t1/t2 is None."); return Ok(0) }  // Does this work?
     if !ts_have_same_tags(py, t1, t2) {
+        println!("Aborting comparison; not same tags.");
         return Ok(0)
     }
     let t1len = t1.len(py).expect("Len failed on argument t1");
@@ -91,12 +92,27 @@ pub fn simple_tree_match_rs(py: Python, t1: &PyObject, t2: &PyObject) -> PyResul
                     Ok(i) => i,
                     Err(e) => return Err(e),
                 };
-            let opt3 = m[[i-1, j-1]] + opt3_inc;
+            let opt3 = opt3_inc + m[[i-1, j-1]]; // + opt3_inc;
             // TODO: 3-item generic max() function
-            m[[i,j]] = if opt1>opt2{if opt1>opt3{opt1}else{opt3}}else{if opt2>opt3{opt2}else{opt3}};
+            m[[i,j]] = max3(opt1, opt2, opt3);
         }
     }
     Ok(1 + m[[m.shape()[0]-1, m.shape()[1]-1]])  // m[m.shape()[0]-1][m.shape[1]-1])
+}
+
+fn max2<T: PartialOrd>(n1: T, n2: T)->T {
+    if n1 > n2 {
+        n1
+    } else {
+        n2
+    }
+}
+
+fn max3<T: PartialOrd>(n1: T, n2: T, n3: T)->T {
+    let mut m = n1;
+    if n2 > m { m = n2 }
+    if n3 > m { m = n3 }
+    m
 }
 
 // Defaults for c1, c2 = 1.
@@ -129,7 +145,6 @@ pub fn clustered_tree_match_rs(py: Python, t1: &PyObject, t2: &PyObject, c1: f64
     let m = t1.len(py).expect("Len failed on argument t1");
     let n = t2.len(py).expect("Len failed on argument t2");
     let mut matrix = ndarray::Array2::<f64>::zeros((m+1, n+1));
-    // TODO verify that ".." ranges are [1,n)
     for i in 1..matrix.shape()[0] {
         for j in 1..matrix.shape()[1] {
             let opt1 = matrix[[i, j-1]];
@@ -143,13 +158,13 @@ pub fn clustered_tree_match_rs(py: Python, t1: &PyObject, t2: &PyObject, c1: f64
                     Err(e) => return Err(e),
                 };
             let opt3 = matrix[[i-1, j-1]] + opt3_inc;
-            matrix[[i, j]] = if opt1>opt2{if opt1>opt3{opt1}else{opt3}}else{if opt2>opt3{opt2}else{opt3}};
+            matrix[[i, j]] = max3(opt1, opt2, opt3);
         }
     }
     if m > 0 || n > 0 {
-        Ok(matrix[[m,n]] / (1.0 * (if c1>c2{c1}else{c2})))
+        Ok(matrix[[m,n]] / (1.0 * max2(c1, c2)))
     } else {
-        Ok(matrix[[m,n]] + (1.0 / (if c1>c2{c1}else{c2})))
+        Ok(matrix[[m,n]] + (1.0 / max2(c1, c2)))
     }
 }
 

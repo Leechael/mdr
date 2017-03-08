@@ -10,7 +10,7 @@ def normalized_simple_tree_match(t1, t2):
     t2size = tree_size(t2)
     return _simple_tree_match(t1, t2) / (2.0 * (t1size + t2size))
 
-def clustered_tree_match(t1, t2, c1=1, c2=1):
+def clustered_tree_match(t1, t2, c1=1.0, c2=1.0):
     return _clustered_tree_match(t1, t2, c1, c2)
 
 class TreeAlignment(object):
