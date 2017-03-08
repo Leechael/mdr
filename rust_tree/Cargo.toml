@@ -6,6 +6,9 @@ authors = ["Cathal Garvey <cathalgarvey@cathalgarvey.me>"]
 [lib]
 crate-type = ["cdylib"]
 
+[dependencies]
+ndarray = "0.8.0"
+
 [dependencies.cpython]
 version = "0.1"
 features = ["extension-module"]

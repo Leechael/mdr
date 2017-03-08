@@ -1,4 +1,6 @@
 #[macro_use] extern crate cpython;
+#[macro_use] extern crate ndarray;
+
 //use cpython;
 use cpython::{Python, PyObject, PyResult, PyIterator, PyClone, ObjectProtocol};
 
@@ -53,20 +55,88 @@ py_module_initializer!(libtreefuncs, initlibtreefuncs, PyInit_libtreefuncs, |py,
     Ok(())
 });
 
+fn ts_have_same_tags(py: Python, t1: &PyObject, t2: &PyObject) -> bool {
+    if !(t1.hasattr(py, "tag").expect("Hasattr failed?") && t2.hasattr(py, "tag").expect("Hasattr failed?")) {
+        return false // TODO This mimics the original Cython behaviour but perhaps a TypeError is more appropriate!
+    }
+    let t1tag = t1.getattr(py, "tag").expect("Getattr failed for 'tag' field after validating that it exists");
+    let t2tag = t2.getattr(py, "tag").expect("Getattr failed for 'tag' field after validating that it exists");
+    t1tag == t2tag
+}
+
 /* Original Cython
+// Looks a bit like Smith-waterman for trees..
 def _simple_tree_match(t1, t2):
     if t1 is None or t2 is None:
         return 0
     if t1.tag != t2.tag:
         return 0
-
     m = np.zeros((len(t1) + 1, len(t2) + 1), np.int)
-
     for i in range(1, m.shape[0]):
         for j in range(1, m.shape[1]):
             m[i, j] = max(m[i, j - 1], m[i - 1, j], m[i - 1, j - 1] + _simple_tree_match(t1[i - 1], t2[j - 1]))
     return 1 + m[m.shape[0]-1, m.shape[1]-1]
 */
+// TODO Untested as yet
+pub fn simple_tree_match_rs(py: Python, t1: &PyObject, t2: &PyObject) -> PyResult<u32> {
+    let none = py.None();
+    if t1 == &none || t2 == &none { return Ok(0) }  // Does this work?
+    if !ts_have_same_tags(py, t1, t2) {
+        return Ok(0)
+    }
+    let t1len = t1.len(py).expect("Len failed on argument t1");
+    let t2len = t2.len(py).expect("Len failed on argument t2");
+    let mut m = ndarray::Array2::<u32>::zeros((t1len + 1, t2len + 1));
+    for i in 1..m.shape()[0] {
+        for j in 1..m.shape()[1] {
+            let opt1 = m[[i, j-1]]; // [i][j-1];
+            let opt2 = m[[i-1, j]]; // [i-1][j];
+            let opt3_inc = match simple_tree_match_rs(py,
+                &t1.get_item(py, i-1).expect("expected Item at i-1"),
+                &t2.get_item(py, j-1).expect("expected Item at j-1")) {
+                    Ok(i) => i,
+                    Err(e) => return Err(e),
+                };
+            let opt3 = m[[i-1, j-1]] + opt3_inc;
+            // TODO: 3-item generic max() function
+            m[[i,j]] = if opt1>opt2{if opt1>opt3{opt1}else{opt3}}else{if opt2>opt3{opt2}else{opt3}};
+        }
+    }
+    Ok(1 + m[[m.shape()[0]-1, m.shape()[1]-1]])  // m[m.shape()[0]-1][m.shape[1]-1])
+}
+
+// Defaults for c1, c2 = 1.
+pub fn clustered_tree_match_rs(py: Python, t1: &PyObject, t2: &PyObject, c1: f64, c2: f64) -> PyResult<f64> {
+    let none = py.None();
+    if t1 == &none || t2 == &none { return Ok(0.0) }  // Does this work?
+    if !ts_have_same_tags(py, t1, t2) {
+        return Ok(0.0)
+    }
+    let m = t1.len(py).expect("Len failed on argument t1");
+    let n = t2.len(py).expect("Len failed on argument t2");
+    let mut matrix = ndarray::Array2::<f64>::zeros((m+1, n+1));
+    for i in 1..matrix.shape()[0] {
+        for j in 1..matrix.shape()[1] {
+            let opt1 = matrix[[i, j-1]];
+            let opt2 = matrix[[i-1, j]];
+            let opt3_inc = match clustered_tree_match_rs(py,
+                &t1.get_item(py, i-1).expect("expected Item at i-1"),
+                &t2.get_item(py, j-1).expect("expected Item at j-1"),
+                m as f64,
+                n as f64) {
+                    Ok(i) => i,
+                    Err(e) => return Err(e),
+                };
+            let opt3 = matrix[[i-1, j-1]] + opt3_inc;
+            matrix[[i, j]] = if opt1>opt2{if opt1>opt3{opt1}else{opt3}}else{if opt2>opt3{opt2}else{opt3}};
+        }
+    }
+    if m > 0 || n > 0 {
+        Ok(matrix[[m,n]] / (1.0 * (if c1>c2{c1}else{c2})))
+    } else {
+        Ok(matrix[[m,n]] + (1.0 / (if c1>c2{c1}else{c2})))
+    }
+}
 
 /*
 def _clustered_tree_match(t1, t2, c1, c2):
@@ -74,12 +144,9 @@ def _clustered_tree_match(t1, t2, c1, c2):
         return 0.0
     if t1.tag != t2.tag:
         return 0.0
-
     m = len(t1)
     n = len(t2)
-
     matrix = np.zeros((m+1, n+1), np.float)
-
     for i from 1 <= i < matrix.shape[0]:
         for j from 1 <= j < matrix.shape[1]:
             matrix[i, j] = max(matrix[i, j - 1], matrix[i - 1, j],
