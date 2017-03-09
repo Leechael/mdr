@@ -4,12 +4,16 @@ version = "0.1.0"
 authors = ["Cathal Garvey <cathalgarvey@cathalgarvey.me>"]
 
 [lib]
+name = "treefuncs"
 crate-type = ["cdylib"]
 
 [dependencies]
 ndarray = "0.8.0"
 
+[features]
+python27-sys = ["cpython/python27-sys"]
+python3-sys = ["cpython/python3-sys"]
+
 [dependencies.cpython]
 version = "0.1"
 default-features = false
-features = ["python27-sys"]

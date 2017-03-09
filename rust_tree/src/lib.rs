@@ -55,7 +55,10 @@ fn ts_have_same_tags(py: Python, t1: &PyObject, t2: &PyObject) -> bool {
     }
     let t1tag = t1.getattr(py, "tag").expect("Getattr failed for 'tag' field after validating that it exists");
     let t2tag = t2.getattr(py, "tag").expect("Getattr failed for 'tag' field after validating that it exists");
-    t1tag.compare(py, t2tag).expect("Comparing strings should be possible.") == std::cmp::Ordering::Equal
+    let t1h = t1tag.hash(py).expect("t1 Should be hashable");
+    let t2h = t2tag.hash(py).expect("t2 Should be hashable");
+    t1h == t2h
+    //t1tag.compare(py, t2tag).expect("Comparing strings should be possible.") == std::cmp::Ordering::Equal
 }
 
 /* Original Cython
