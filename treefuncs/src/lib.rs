@@ -27,17 +27,12 @@ fn is_none(token: Python, input: &PyObject) -> bool {
     input == &none
 }
 
-fn rs_tree_size(token: Python, input: PyIterator) -> PyResult<usize> {
-    let mut accum = 1;  // For this node
-    for child in input.into_iter() {
-        accum += rs_tree_size(token, child?.iter(token)? )?;
+pub fn tree_size(py: Python, input: &PyObject) -> PyResult<usize> {
+    let mut accum = 1;
+    for child in input.iter(py)?.into_iter() {
+        accum += tree_size(token, child?)?
     }
     return Ok(accum)
-}
-
-pub fn py_tree_size(token: Python, input: &PyObject) -> PyResult<usize> {
-    let my_input_ref = input.clone_ref(token);
-    rs_tree_size(token, my_input_ref.iter(token)?)
 }
 
 fn ts_have_same_tags(py: Python, t1: &PyObject, t2: &PyObject) -> PyResult<bool> {
@@ -113,7 +108,7 @@ pub fn depta_tree_match_rs(py: Python, t1: &PyObject, t2: &PyObject) -> PyResult
 
 py_module_initializer!(libtreefuncs, initlibtreefuncs, PyInit_libtreefuncs, |py, m| {
     m.add(py, "__doc__", "Experimental Rust replacement for Cython code in mdr.")?;
-    m.add(py, "tree_size", py_fn!(py, py_tree_size(input: &PyObject)))?;
+    m.add(py, "tree_size", py_fn!(py, tree_size(input: &PyObject)))?;
     m.add(py, "_simple_tree_match", py_fn!(py, simple_tree_match_rs(t1: &PyObject, t2: &PyObject)))?;
     m.add(py, "_clustered_tree_match", py_fn!(py, clustered_tree_match_rs(t1: &PyObject, t2: &PyObject, c1: f64, f2: f64)))?;
     m.add(py, "depta_tree_match", py_fn!(py, depta_tree_match_rs(t1: &PyObject, t2: &PyObject)))?;

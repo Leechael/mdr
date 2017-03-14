@@ -1,3 +1,4 @@
 numpy
 scipy
 lxml
+https://github.com/novocaine/rust-python-ext/archive/a19489fd0add69372d03e991c8151f2f8c067814.zip
