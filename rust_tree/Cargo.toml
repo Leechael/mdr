@@ -9,6 +9,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 ndarray = "0.8.0"
+num = "*"
 
 [features]
 python27-sys = ["cpython/python27-sys"]

@@ -10,7 +10,7 @@ from lxml import etree
 import numpy as np
 import scipy.cluster.hierarchy as sch
 
-from .libtreefuncs import tree_size #_tree import tree_size
+from libtreefuncs import tree_size #_tree import tree_size
 from .tree import PartialTreeAligner, clustered_tree_match
 from .utils import split_sequence, common_prefix, simplify_xpath
 
