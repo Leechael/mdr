@@ -12,7 +12,11 @@ change the similarity to tree alignment proposed by `Web Data Extraction Based o
 Requires
 ========
 
-``numpy`` and ``scipy`` must be installed to build this package.
+``setuptools-rust``, ``numpy``, and ``scipy`` must be installed to build this package, and a Rust nightly installer (e.g. using rustup_).
+
+``setuptools-rust`` at least may require manual installation with ``pip`` prior to calling ``setup.py``.
+
+If you plan to install in ``develop`` mode, because ``rustup`` doesn't install system-wide, use the ``--user`` flag to install the library to a user-local PYTHONPATH folder.
 
 Usage
 =====
@@ -63,5 +67,6 @@ License
 
 MIT
 
+,, _rustup: https://www.rustup.rs/
 .. _scrapely: https://github.com/scrapy/scrapely
 .. _here: http://ibc.scrapinghub.com/tmp/h.html
