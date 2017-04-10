@@ -1,5 +1,5 @@
 include README.rst
 include CHANGES.txt
-include update_c.sh
 
-recursive-include mdr *.py *.pyx *.c
+recursive-include mdr *.py
+recursive-include mdr_treelib *.rs *.toml *.lock

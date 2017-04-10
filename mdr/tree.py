@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import copy
+from six.moves import range
 
 from .utils import find_continous_subsequence, reverse_dict
 from ._treelib import _clustered_tree_match, _simple_tree_match, tree_size
@@ -52,8 +53,8 @@ class SimpleTreeAligner(object):
         align_matrix = np.array([[0 for _ in range(len(r2))] for _ in range(len(r1))], np.object)
         trace = np.zeros((len(r1), len(r2)), np.int)
 
-        for i in xrange(1, m.shape[0]):
-            for j in xrange(1, m.shape[1]):
+        for i in range(1, m.shape[0]):
+            for j in range(1, m.shape[1]):
                 if m[i, j-1] > m[i-1, j]:
                     m[i, j] = m[i, j-1]
                     trace[i-1, j-1] = TreeAlignment.TRACE_LEFT
@@ -100,8 +101,8 @@ class SimpleTreeAligner(object):
         align_matrix = np.array([[0 for _ in range(len(t2))] for _ in range(len(t1))], np.object)
         trace = np.zeros((len(t1), len(t2)), np.int)
 
-        for i in xrange(1, m.shape[0]):
-            for j in xrange(1, m.shape[1]):
+        for i in range(1, m.shape[0]):
+            for j in range(1, m.shape[1]):
                 if m[i, j - 1] > m[i - 1, j]:
                     m[i, j] = m[i, j - 1]
                     trace[i - 1, j - 1] = TreeAlignment.TRACE_LEFT

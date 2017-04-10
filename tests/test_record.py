@@ -44,7 +44,7 @@ class RecordAlignerTest(unittest.TestCase):
         for tag in ['root', 'a', 'b', 'c']:
             e = seed[0].xpath('//%s' % tag)[0]
             expected = []
-            for record, mapping in mappings.iteritems():
+            for record, mapping in mappings.items():
                 expected.append(mapping[e].tag)
             self.assertEqual([tag] * 3, expected)
 
@@ -62,7 +62,7 @@ class RecordAlignerTest(unittest.TestCase):
         for tag in ['root', 'a', 'b', 'c']:
             root = seed[0].xpath('//%s' % tag)[0]
             expected = []
-            for record, mapping in mappings.iteritems():
+            for record, mapping in mappings.items():
                 if seed_record == record:
                     continue
                 expected.append(mapping[root].tag)

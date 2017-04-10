@@ -4,6 +4,7 @@ import collections
 import itertools
 import operator
 import six
+from six.moves import range
 
 from lxml import etree
 
@@ -250,8 +251,8 @@ class RecordFinder(object):
 
         m = np.zeros((len(r1)+1, len(r2)+1), np.float)
 
-        for i in xrange(1, len(m)):
-            for j in xrange(1, len(m[0])):
+        for i in range(1, len(m)):
+            for j in range(1, len(m[0])):
                 sim = self.tree_similarity_cache.get((r1[i - 1], r2[j - 1]))
                 assert sim != None, 'tree %s %s not in cache' % (r1[i-1], r2[j-1])
                 m[i, j] = max(m[i, j - 1], m[i - 1, j], m[i - 1][j - 1] + sim)

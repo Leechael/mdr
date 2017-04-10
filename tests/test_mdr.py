@@ -88,8 +88,8 @@ class MdrTest(unittest.TestCase):
 
         extracted_dates = []
 
-        for record, mapping in mappings.iteritems():
-            for k, v in mapping.iteritems():
+        for record, mapping in mappings.items():
+            for k, v in mapping.items():
                 if k.attrib.get('itemprop') == 'datePublished':
                     extracted_dates.append(v.attrib.get('content'))
 
@@ -114,8 +114,8 @@ class MdrTest(unittest.TestCase):
         extracted_dates = []
         extracted_texts = []
 
-        for record, mapping in mappings.iteritems():
-            for k, v in mapping.iteritems():
+        for record, mapping in mappings.items():
+            for k, v in mapping.items():
                 if k.attrib.get('class') == 'dtreviewed':
                     extracted_dates.append(v.text)
                 elif k.attrib.get('class') == 'description':

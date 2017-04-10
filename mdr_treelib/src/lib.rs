@@ -1,5 +1,5 @@
 #[macro_use] extern crate cpython;
-#[macro_use] extern crate ndarray;
+extern crate ndarray;
 extern crate num;
 
 //use cpython;
@@ -117,7 +117,7 @@ pub fn depta_tree_match_rs(py: Python, t1: &PyObject, t2: &PyObject) -> PyResult
     return Ok(1. + matrix[[m-1, n-1]])
 }
 
-py_module_initializer!(mdrtreelib, init_treelib, PyInit__treelib, |py, m| {
+py_module_initializer!(_treelib, init_treelib, PyInit__treelib, |py, m| {
     m.add(py, "__doc__", "Experimental Rust replacement for Cython code in mdr.")?;
     m.add(py, "tree_size", py_fn!(py, tree_size(input: &PyObject)))?;
     m.add(py, "tree_depth", py_fn!(py, tree_depth(input: &PyObject)))?;
