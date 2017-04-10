@@ -1,11 +1,13 @@
 from setuptools import setup, find_packages #, Extension
-from rust_ext import build_rust_cmdclass, install_lib_including_rust
-#import numpy
+from setuptools_rust import RustExtension
+import sys
 
-#ext_modules = [Extension('mdr._tree',
-#    sources=['mdr/_tree.c'],
-#    include_dirs = [numpy.get_include()],
-#)]
+if sys.version_info[0] == 3:
+    VERSION_FEATURE = "python3-sys"
+elif sys.version_info[0] == 2:
+    VERSION_FEATURE = "python27-sys"
+else:
+    raise SystemError("Unknown python major version, this extension expects Python 2 or 3.")
 
 setup(name='mdr',
       version='0.0.1',
@@ -17,10 +19,7 @@ setup(name='mdr',
       license='MIT',
       packages=find_packages(exclude=['tests', 'tests.*']),
       #ext_modules=ext_modules,
-      install_requires=['lxml'],
-      cmdclass={
-          'build_rust': build_rust_cmdclass('treefuncs/Cargo.toml'),
-          '': install_lib_including_rust
-      },
+      install_requires=['lxml', 'numpy', 'scipy', 'six'],
+      rust_extensions=[RustExtension("mdr._treelib", "mdr_treelib/Cargo.toml", features=[VERSION_FEATURE])],
       zip_safe=False
 )

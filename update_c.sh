@@ -1,1 +1,0 @@
-cython -a mdr/_tree.pyx

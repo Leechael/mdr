@@ -1,10 +1,10 @@
 [package]
-name = "treefuncs"
+name = "mdrtreelib"
 version = "0.1.0"
 authors = ["Cathal Garvey <cathalgarvey@cathalgarvey.me>"]
 
 [lib]
-name = "treefuncs"
+name = "mdrtreelib"
 crate-type = ["cdylib"]
 
 [dependencies]

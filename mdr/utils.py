@@ -53,7 +53,7 @@ def common_prefix(*sequences):
     ['a', 'b']
     """
     prefix = []
-    for sample in itertools.izip(*sequences):
+    for sample in zip(*sequences):
         first = sample[0]
         if all([x == first for x in sample[1:]]):
             prefix.append(first)

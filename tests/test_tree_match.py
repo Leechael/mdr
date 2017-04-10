@@ -1,7 +1,7 @@
 import unittest
 
 from lxml import etree
-from libtreefuncs import tree_size, _simple_tree_match # from ._tree
+from mdrtreelib import tree_size, _simple_tree_match # from ._tree
 from mdr.tree import clustered_tree_match
 
 s1 = """<root>

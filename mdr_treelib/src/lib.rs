@@ -3,7 +3,7 @@
 extern crate num;
 
 //use cpython;
-use cpython::{Python, PyObject, PyResult, PyIterator, PyClone, ObjectProtocol};
+use cpython::{Python, PyObject, PyResult, ObjectProtocol};
 
 #[cfg(test)]
 mod tests {
@@ -30,9 +30,20 @@ fn is_none(token: Python, input: &PyObject) -> bool {
 pub fn tree_size(py: Python, input: &PyObject) -> PyResult<usize> {
     let mut accum = 1;
     for child in input.iter(py)?.into_iter() {
-        accum += tree_size(token, child?)?
+        accum += tree_size(py, &child?)?
     }
     return Ok(accum)
+}
+
+pub fn tree_depth(py: Python, input: &PyObject) -> PyResult<usize> {
+    if input.len(py)? == 0 {
+        return Ok(1)
+    }
+    let mut maximum = 0;
+    for child in input.iter(py)?.into_iter() {
+        maximum = max2(maximum, tree_depth(py, &child?)?);
+    }
+    Ok(maximum + 1)
 }
 
 fn ts_have_same_tags(py: Python, t1: &PyObject, t2: &PyObject) -> PyResult<bool> {
@@ -106,9 +117,10 @@ pub fn depta_tree_match_rs(py: Python, t1: &PyObject, t2: &PyObject) -> PyResult
     return Ok(1. + matrix[[m-1, n-1]])
 }
 
-py_module_initializer!(libtreefuncs, initlibtreefuncs, PyInit_libtreefuncs, |py, m| {
+py_module_initializer!(mdrtreelib, init_treelib, PyInit__treelib, |py, m| {
     m.add(py, "__doc__", "Experimental Rust replacement for Cython code in mdr.")?;
     m.add(py, "tree_size", py_fn!(py, tree_size(input: &PyObject)))?;
+    m.add(py, "tree_depth", py_fn!(py, tree_depth(input: &PyObject)))?;
     m.add(py, "_simple_tree_match", py_fn!(py, simple_tree_match_rs(t1: &PyObject, t2: &PyObject)))?;
     m.add(py, "_clustered_tree_match", py_fn!(py, clustered_tree_match_rs(t1: &PyObject, t2: &PyObject, c1: f64, f2: f64)))?;
     m.add(py, "depta_tree_match", py_fn!(py, depta_tree_match_rs(t1: &PyObject, t2: &PyObject)))?;

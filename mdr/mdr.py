@@ -3,16 +3,17 @@ import copy
 import collections
 import itertools
 import operator
+import six
 
-from cStringIO import StringIO
 from lxml import etree
 
 import numpy as np
 import scipy.cluster.hierarchy as sch
 
-from libtreefuncs import tree_size #_tree import tree_size
+from ._treelib import tree_size #_tree import tree_size
 from .tree import PartialTreeAligner, clustered_tree_match
 from .utils import split_sequence, common_prefix, simplify_xpath
+
 
 class Record(object):
     """A class represent a data record.
@@ -73,11 +74,11 @@ class MDR(object):
         -------
         A sorted list of elements with descreasing order of odds of being an candidate.
         """
-        if isinstance(html, unicode):
+        if isinstance(html, six.text_type):
             html = html.encode(encoding)
 
         parser = etree.HTMLParser(encoding=encoding)
-        doc = etree.parse(StringIO(html), parser)
+        doc = etree.parse(six.BytesIO(html), parser)
 
         d = {}
         # find all the non-empty text nodes
@@ -87,7 +88,7 @@ class MDR(object):
             d.setdefault(simplify_xpath(xpath), []).append(xpath)
 
         counter = collections.Counter()
-        for key, elements in d.iteritems():
+        for key, elements in d.items():
             deepest_common_ancestor = "/".join(common_prefix(*[xpath.split('/') for xpath in elements]))
             counter[deepest_common_ancestor] += 1
 
