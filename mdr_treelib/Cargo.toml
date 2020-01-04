@@ -10,11 +10,13 @@ crate-type = ["cdylib"]
 [dependencies]
 ndarray = "0.8.0"
 num = "*"
+pyo3 = "*"
 
-#[features]
+[features]
 #python27-sys = ["cpython/python27-sys"]
-#python3-sys = ["cpython/python3-sys"]
+python3-sys = ["cpython/python3-sys"]
 
 [dependencies.cpython]
-version = "0.1"
+version = "0.3"
+features = ["extension-module", "python3-sys"]
 default-features = false
